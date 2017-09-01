@@ -6,45 +6,55 @@ use Symfony\Component\Finder\Finder;
 class Memo
 {
     protected static $dataPath = "%s/.memo";
+    protected static $memoPath = "%s/memo";
 
-    protected static $nowMemo = "%s/head_memo_name_record";
+    const NOW_MEMO_NAME = "head_memo_name_record";
 
-    protected static $defaultMemoName = "默认备忘录";
-    protected static $memoPath = "%s/%s";
+    const DEFAULT_MEMO_NAME = "默认备忘录";
 
     public static function initEnv()
     {
         $home = getenv("HOME");
         self::$dataPath = sprintf(self::$dataPath, $home);
-        if (is_dir(self::$dataPath)) {
+        self::$memoPath = sprintf(self::$memoPath, self::$dataPath);
+        if (is_dir(self::$dataPath) && is_dir(self::$memoPath)) {
             return true;
         }
-        if (!mkdir(self::$dataPath)) {
-            echo "初始化失败，请确保[".self::$dataPath."]存在<br>";
+        $flag = is_dir(self::$dataPath) || mkdir(self::$dataPath);
+        $flag = $flag && (is_dir(self::$memoPath) || mkdir(self::$memoPath));
+        if (!$flag) {
+            echo "初始化失败，请确保[".self::$dataPath."],[".self::$memoPath."]存在<br>";
             exit();
         } else {
-            self::createMemo(self::$defaultMemoName);
-            self::changeMemo(self::$defaultMemoName);
+            self::createMemo(self::DEFAULT_MEMO_NAME);
+            self::changeMemo(self::DEFAULT_MEMO_NAME);
         }
     }
 
     public static function createMemo($name)
     {
-        $memoPath = sprintf(self::$memoPath, self::$dataPath, $name);
+        $memoPath = self::$memoPath . "/{$name}";
         $flag = touch($memoPath);
         return $flag ? true : false;
     }
 
     public static function changeMemo($name)
     {
-        $nowMemoPath = sprintf(self::$nowMemo, self::$dataPath);
-        $flag = file_put_contents($nowMemoPath, $name);
+        $nowMemo = self::$dataPath."/".self::NOW_MEMO_NAME;
+        $flag = file_put_contents($nowMemo, $name);
+        return $flag ? true : false;
+    }
+
+    public static function delMemo($name)
+    {
+        $memo = self::$memoPath."/".$name;
+        $flag = unlink($memo);
         return $flag ? true : false;
     }
 
     public static function getNowMemoName()
     {
-        $nowMemo = sprintf(self::$nowMemo, self::$dataPath);
+        $nowMemo = self::$dataPath."/".self::NOW_MEMO_NAME;
         $record = trim(file_get_contents($nowMemo));   
         return $record;
     }
@@ -52,9 +62,17 @@ class Memo
     public static function listAllMemo()
     {
         $finder = new Finder();
-        $finder->files()->in(self::$dataPath);
+        $finder->files()->in(self::$memoPath);
+        $memos = [];
         foreach ($finder as $file) {
-            var_dump($file->getRelativePathname());
+            $memos[] = $file->getRelativePathname();
         }
+        return $memos;
+    }
+
+    public static function getMemoShortName($name)
+    {
+        $md5 = md5($name);
+        return substr($md5, 0, 8);
     }
 }

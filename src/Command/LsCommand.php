@@ -15,11 +15,20 @@ class LsCommand extends Command
         $this->setName("ls")
             ->setDescription("列出所有的备忘录名称");
     }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln("备忘录1");
-        $output->writeln("备忘录3");
-        $output->writeln("备忘录2");
-        Memo::listAllMemo();
+        $memos = Memo::listAllMemo();
+        $nowMemo = Memo::getNowMemoName();
+        foreach ($memos as $value) {
+            $memo = "";
+            $shortName = Memo::getMemoShortName($value);
+            if ($value == $nowMemo) {
+                $memo .= "* {$shortName} {$nowMemo}";
+            } else {
+                $memo .= "  {$shortName} {$value}";
+            }
+            $output->writeln($memo);
+        }
     }
 }

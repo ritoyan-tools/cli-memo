@@ -13,11 +13,17 @@ foreach([
     }
 }
 use Aizuyan\Memo\Command\LsCommand;
+use Aizuyan\Memo\Command\CreateCommand;
+use Aizuyan\Memo\Command\ChangeCommand;
+use Aizuyan\Memo\Command\DelCommand;
 use Aizuyan\Memo\Console\Application;
 $app = new Application("cli-memo", "1.0.0");
 // 列出所有的备忘录
 $cmdLs = new LsCommand();
 $app->add($cmdLs);
+$app->add(new CreateCommand());
+$app->add(new ChangeCommand());
+$app->add(new DelCommand());
 $app->setDefaultCommand($cmdLs->getName());
 $statue = $app->run();
 exit($statue);
