@@ -1,0 +1,19 @@
+{
+    "name": "aizuyan/cli-memo",
+    "description": "命令行记事本",
+    "authors": [
+        {
+            "name": "燕睿涛",
+            "email": "ritoyan@163.com"
+        }
+    ],
+    "require": {
+        "symfony/console": "^3.3",
+        "symfony/finder": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aizuyan\\Memo\\": "src"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+if (PHP_SAPI !== 'cli') {
+    echo 'Warning: img2ascii should be invoked via the CLI, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
+}
+foreach([
+    __DIR__ . "/../../../autoload.php",
+    __DIR__ . "/../vendor/autoload.php"
+] as $file) {
+    if (file_exists($file)) {
+        require $file;
+        break;
+    }
+}
+use Aizuyan\Memo\Command\LsCommand;
+use Aizuyan\Memo\Console\Application;
+$app = new Application("cli-memo", "1.0.0");
+// 列出所有的备忘录
+$cmdLs = new LsCommand();
+$app->add($cmdLs);
+$app->setDefaultCommand($cmdLs->getName());
+$statue = $app->run();
+exit($statue);
