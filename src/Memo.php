@@ -75,4 +75,46 @@ class Memo
         $md5 = md5($name);
         return substr($md5, 0, 8);
     }
+
+    public static function addMemo($memo)
+    {
+        $memoName = self::getNowMemoName();
+        $memoPath = self::$memoPath . "/" . $memoName;
+        $lists = file_get_contents($memoPath);
+        $lists = json_decode($lists, true);
+        $lists = empty($lists) ? [] : $lists;
+        $shortName = self::getMemoShortName($memo);
+        $lists[$shortName] = [
+            "memo" => $memo,
+            "status" => "init",
+        ];
+        $flag = file_put_contents($memoPath, json_encode($lists));
+        return $flag ? true : false;
+    }
+
+    public static function showMemo()
+    {
+        $memoName = self::getNowMemoName();
+        $memoPath = self::$memoPath . "/" . $memoName;
+        $lists = file_get_contents($memoPath);
+        $lists = json_decode($lists, true);
+        $lists = empty($lists) ? [] : $lists;
+        return $lists;
+    }
+
+    public static function doMemo($shortName, &$fullName)
+    {
+        $memoName = self::getNowMemoName();
+        $memoPath = self::$memoPath . "/" . $memoName;
+        $lists = file_get_contents($memoPath);
+        $lists = json_decode($lists, true);
+        $lists = empty($lists) ? [] : $lists;
+        if (!isset($lists[$shortName])) {
+            return false;
+        }
+        $lists[$shortName]["status"] = "done";
+        $fullName = $lists[$shortName]["memo"];
+        $flag = file_put_contents($memoPath, json_encode($lists));
+        return $flag ? true : false;
+    }
 }
