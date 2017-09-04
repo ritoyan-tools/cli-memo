@@ -20,15 +20,18 @@ class LsCommand extends Command
     {
         $memos = Memo::listAllMemo();
         $nowMemo = Memo::getNowMemoName();
+        $lastShow = "";
         foreach ($memos as $value) {
             $memo = "";
             $shortName = Memo::getMemoShortName($value);
             if ($value == $nowMemo) {
-                $memo .= "* {$shortName} {$nowMemo}";
+                $lastShow .= "* {$shortName} <info>{$nowMemo}</info>";
+                continue;
             } else {
                 $memo .= "  {$shortName} {$value}";
             }
             $output->writeln($memo);
         }
+        $output->writeln("{$lastShow}");
     }
 }
