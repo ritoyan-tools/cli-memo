@@ -22,14 +22,14 @@ use Aizuyan\Memo\Command\DoCommand;
 use Aizuyan\Memo\Console\Application;
 $app = new Application("cli-memo", "1.0.0");
 // 列出所有的备忘录
-$cmdLs = new LsCommand();
-$app->add($cmdLs);
+$cmdShow = new ShowCommand();
+$app->add(new LsCommand());
 $app->add(new CreateCommand());
 $app->add(new ChangeCommand());
 $app->add(new DelCommand());
 $app->add(new AddCommand());
-$app->add(new ShowCommand());
+$app->add($cmdShow);
 $app->add(new DoCommand());
-$app->setDefaultCommand($cmdLs->getName());
+$app->setDefaultCommand($cmdShow->getName());
 $statue = $app->run();
 exit($statue);
