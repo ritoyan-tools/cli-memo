@@ -2,33 +2,110 @@
 namespace Aizuyan\Memo;
 
 use Symfony\Component\Finder\Finder;
+use Aizuyan\Memo\Exception\MemoException;
 
 class Memo
 {
-    protected static $dataPath = "%s/.memo";
-    protected static $memoPath = "%s/memo";
+    /**
+     * @var 操作系统类型，未知、windows、linux
+     */
+    const OS_NONE = 0;
+    const OS_WIN = 1;
+    const OS_LINUX = 2;
 
-    const NOW_MEMO_NAME = "head_memo_name_record";
+    /**
+     * 备忘录数据根目录
+     * @var string
+     */
+    protected static $dataPath = "";
 
-    const DEFAULT_MEMO_NAME = "默认备忘录";
+    /**
+     * 备忘录具体信息保存的目录
+     * @var string
+     */
+    protected static $memoPath = "";
 
-    public static function initEnv()
+    /**
+     * 记录当前备忘录名称的文件
+     * @var string
+     */
+    protected static $currentMemoRecordFile = "";
+
+    /**
+     * 是否初始化过得文件标志，存在：已经初始化，不存在：未初始化
+     * @var string
+     */
+    protected static $initFlagFile = "";
+
+    /**
+     * 获取当前用户操作系统类型
+     * @return int 当前用户操作系统类型
+     */
+    public static function getOsType()
     {
-        $home = getenv("HOME");
-        self::$dataPath = sprintf(self::$dataPath, $home);
-        self::$memoPath = sprintf(self::$memoPath, self::$dataPath);
-        if (is_dir(self::$dataPath) && is_dir(self::$memoPath)) {
-            return true;
+        $os = self::OS_NONE;
+        if (DIRECTORY_SEPARATOR == "\\") {
+            $os = self::OS_WIN;
+        } else if (DIRECTORY_SEPARATOR == "/") {
+            $os = self::OS_LINUX;
         }
-        $flag = is_dir(self::$dataPath) || mkdir(self::$dataPath);
-        $flag = $flag && (is_dir(self::$memoPath) || mkdir(self::$memoPath));
+
+        return $os;
+    }
+
+    /**
+     * 获取当前用户家目录
+     * @return string
+     */
+    public static function getUserDir()
+    {
+        $os = self::getOsType();
+
+        $home = "";
+        if (self::OS_WIN == $os) {
+            $home = getenv("USERPROFILE");
+        } else if (self::OS_LINUX == $os) {
+            $home = getenv("HOME");
+        }
+
+        return $home;
+    }
+
+    protected function initPathVar()
+    {
+        $home = self::getUserDir();
+        self::$dataPath = sprintf("%s/.memo", $home);
+        self::$memoPath = sprintf("%s/memo", self::$dataPath);
+        self::$initFlagFile = self::$dataPath . "/initFlag";
+        self::$currentMemoRecordFile = sprintf("%s/head_memo_name_record", self::$dataPath);
+    }
+
+    /**
+     * 判断是否初始化过
+     * @return boolean true/false 已经初始化过/为初始化过
+     */
+    public static function isInit()
+    {
+        clearstatcache();
+        $flag = file_exists(self::$initFlagFile);
+
+        return $flag ? true : false;
+    }
+
+    public static function init()
+    {
+        if (self::isInit()) {
+            throw new MemoException("已经初始化过了", 1);
+        }
+        $flag = mkdir(self::$dataPath) && mkdir(self::$memoPath) && touch(self::$initFlagFile);
         if (!$flag) {
-            echo "初始化失败，请确保[".self::$dataPath."],[".self::$memoPath."]存在<br>";
-            exit();
-        } else {
-            self::createMemo(self::DEFAULT_MEMO_NAME);
-            self::changeMemo(self::DEFAULT_MEMO_NAME);
+            throw new MemoException("舒适化失败", 1);
         }
+        $defaultMemo = "默认备忘录";
+        // 创建默认备忘录
+        self::createMemo($defaultMemo);
+        // 切换当前备忘录为默认备忘录
+        self::changeMemo($defaultMemo);
     }
 
     public static function createMemo($name)
@@ -40,8 +117,7 @@ class Memo
 
     public static function changeMemo($name)
     {
-        $nowMemo = self::$dataPath."/".self::NOW_MEMO_NAME;
-        $flag = file_put_contents($nowMemo, $name);
+        $flag = file_put_contents(self::$currentMemoRecordFile, $name);
         return $flag ? true : false;
     }
 
@@ -54,8 +130,7 @@ class Memo
 
     public static function getNowMemoName()
     {
-        $nowMemo = self::$dataPath."/".self::NOW_MEMO_NAME;
-        $record = trim(file_get_contents($nowMemo));   
+        $record = trim(file_get_contents(self::$currentMemoRecordFile));   
         return $record;
     }
 

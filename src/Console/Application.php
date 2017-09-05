@@ -13,6 +13,6 @@ class Application extends BaseApplication
     public function __construct()
     {
         parent::__construct(self::NAME, self::VERSION);
-		Memo::initEnv();
+		Memo::initPathVar();
     }
 }
