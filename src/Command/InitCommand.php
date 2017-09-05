@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Aizuyan\Memo\Memo;
+use Aizuyan\Memo\Exception\MemoException;
 
 class InitCommand extends Command
 {
@@ -18,13 +19,16 @@ class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $memoInfo = $input->getArgument("memoInfo");
-        $flag = Memo::addMemo($memoInfo);
+        $flag = Memo::isInit();
         if ($flag) {
-            $info = "添加备忘[{$memoInfo}]成功";
-        } else {
-            $info = "添加备忘[{$memoInfo}]失败";
+            throw new MemoException("\n  <info>已经初始化过了</info>\n", 1);
         }
-        $output->writeln($info);
+
+        $ret = Memo::init();
+        if ($ret) {
+            $output->writeln("<info>初始化成功</info>");
+        } else {
+            $output->writeln("<error>初始化失败</error>");
+        }
     }
 }

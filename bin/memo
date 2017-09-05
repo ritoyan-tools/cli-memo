@@ -12,24 +12,35 @@ foreach([
         break;
     }
 }
-use Aizuyan\Memo\Command\LsCommand;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Aizuyan\Memo\Command\ListCommand;
 use Aizuyan\Memo\Command\CreateCommand;
 use Aizuyan\Memo\Command\ChangeCommand;
 use Aizuyan\Memo\Command\DelCommand;
 use Aizuyan\Memo\Command\AddCommand;
 use Aizuyan\Memo\Command\ShowCommand;
 use Aizuyan\Memo\Command\DoCommand;
+use Aizuyan\Memo\Command\HelpCommand;
+use Aizuyan\Memo\Command\InitCommand;
 use Aizuyan\Memo\Console\Application;
+use Aizuyan\Memo\Command\MemoException;
 $app = new Application("cli-memo", "1.0.0");
 // 列出所有的备忘录
 $cmdShow = new ShowCommand();
-$app->add(new LsCommand());
+$app->add(new ListCommand());
 $app->add(new CreateCommand());
 $app->add(new ChangeCommand());
 $app->add(new DelCommand());
 $app->add(new AddCommand());
-$app->add($cmdShow);
 $app->add(new DoCommand());
+$app->add(new HelpCommand());
+$app->add(new InitCommand());
+$app->add($cmdShow);
 $app->setDefaultCommand($cmdShow->getName());
-$statue = $app->run();
-exit($statue);
+try {
+	$status = $app->run();
+	exit($status);
+} catch (Exception $e) {
+	$output = new ConsoleOutput();
+	$output->writeln($e->getMessage());
+}

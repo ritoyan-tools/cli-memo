@@ -9,11 +9,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Aizuyan\Memo\Memo;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
-class LsCommand extends Command
+class ListCommand extends Command
 {
     protected function configure()
     {
-        $this->setName("ls")
+        $this->setName("list")
             ->setDescription("列出所有的备忘录名称");
     }
 

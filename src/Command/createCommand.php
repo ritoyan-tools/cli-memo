@@ -20,12 +20,13 @@ class CreateCommand extends Command
     }
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // TODO 判断是否已经存在了
         $memoName = $input->getArgument("memoName");
         $flag = Memo::createMemo($memoName);
         if ($flag) {
-            $output->writeln("创建新的备忘录[{$memoName}]成功。");
+            $output->writeln("<info>创建新的备忘录[{$memoName}]成功</info>");
         } else {
-            $output->writeln("创建新的备忘录[{$memoName}]失败。");
+            $output->writeln("<error>创建新的备忘录[{$memoName}]失败</error>");
         }
     }
 }

@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Aizuyan\Memo\Memo;
+use Aizuyan\Memo\Exception\MemoException;
 
 class DelCommand extends Command
 {
@@ -15,31 +16,28 @@ class DelCommand extends Command
         $this->setName("del")
             ->setDescription("删除备忘录")
             ->addArgument(
-                'memoShortName', InputArgument::REQUIRED, '新备忘录名称。'
+                'shortName', InputArgument::REQUIRED, '新备忘录名称。'
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $memoShortName = $input->getArgument("memoShortName");
+        $shortName = $input->getArgument("shortName");
         $memos = Memo::listAllMemo();
-        $nowMemo = Memo::getNowMemoName();
-        if (Memo::getMemoShortName($nowMemo) == $memoShortName) {
-            $output->writeln("删除失败，当前在[{nowMemo}]备忘录");
-            return;
+        $memos = Memo::memoInfos();
+        if (!isset($memos[$shortName])) {
+            throw new MemoException("\n <error>备忘录[{$shortName}]不存在</error>\n", 1);
         }
-        $flag = false;
-        foreach ($memos as $value) {
-            $shortName = Memo::getMemoShortName($value);
-            if ($shortName == $memoShortName) {
-                $flag = Memo::delMemo($value);
-                break;
-            }
+
+        $nowMemoName = Memo::getNowMemoName();
+        if (Memo::getMemoShortName($nowMemoName) == $memos[$shortName]) {
+            throw new MemoException("\n <error>当前在要删除的备忘录[{$shortName} => $nowMemoName], 不可删除当前备忘录</error>\n", 1);
         }
+        $flag = Memo::delMemo($memos[$shortName]);
         if ($flag) {
-            $info = "删除备忘录[{$value}]成功";
+            $info = "<info>删除备忘录[{$shortName} => ".$memos[$shortName]."]成功</info>";
         } else {
-            $info = "删除备忘录[{$value}]失败";
+            $info = "<error>删除备忘录[{$shortName} => ".$memos[$shortName]."]失败</error>";
         }
         $output->writeln($info);
     }

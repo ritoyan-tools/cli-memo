@@ -22,11 +22,12 @@ class AddCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $memoInfo = $input->getArgument("memoInfo");
+        $nowMemoName = Memo::getNowMemoName();
         $flag = Memo::addMemo($memoInfo);
         if ($flag) {
-            $info = "添加备忘[{$memoInfo}]成功";
+            $info = "<info>添加备忘[{$memoInfo}]到备忘录[{$nowMemoName}]成功</info>";
         } else {
-            $info = "添加备忘[{$memoInfo}]失败";
+            $info = "<error>添加备忘[{$memoInfo}]到备忘录[{$nowMemoName}]失败</error>";
         }
         $output->writeln($info);
     }

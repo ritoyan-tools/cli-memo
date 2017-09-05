@@ -71,7 +71,7 @@ class Memo
         return $home;
     }
 
-    protected function initPathVar()
+    public static function initPathVar()
     {
         $home = self::getUserDir();
         self::$dataPath = sprintf("%s/.memo", $home);
@@ -92,35 +92,62 @@ class Memo
         return $flag ? true : false;
     }
 
+    /**
+     * 初始化环境，建立文件、文件夹
+     * @return [type] [description]
+     */
     public static function init()
     {
-        if (self::isInit()) {
-            throw new MemoException("已经初始化过了", 1);
-        }
         $flag = mkdir(self::$dataPath) && mkdir(self::$memoPath) && touch(self::$initFlagFile);
         if (!$flag) {
-            throw new MemoException("舒适化失败", 1);
+            throw new MemoException("\n  <error>初始化失败<error>\n", 1);
         }
         $defaultMemo = "默认备忘录";
         // 创建默认备忘录
-        self::createMemo($defaultMemo);
+        if (
+            self::createMemo($defaultMemo) &&
         // 切换当前备忘录为默认备忘录
-        self::changeMemo($defaultMemo);
+            self::changeMemo($defaultMemo)
+        ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
+    /**
+     * 创建新的备忘录   
+     * @param  string $name 备忘录名称
+     * @return boolean
+     */     
     public static function createMemo($name)
     {
+        $name = trim($name);
+        if (empty($name)) {
+            throw new MemoException("备忘录名称错误", 1);
+            
+        }
         $memoPath = self::$memoPath . "/{$name}";
         $flag = touch($memoPath);
         return $flag ? true : false;
     }
 
+    /**
+     * 切换当前的备忘录
+     * @param  string $name 备忘录名称
+     * @return boolean
+     */
     public static function changeMemo($name)
     {
         $flag = file_put_contents(self::$currentMemoRecordFile, $name);
         return $flag ? true : false;
     }
 
+    /**
+     * 删除备忘录
+     * @param  [type] $name [description]
+     * @return [type]       [description]
+     */
     public static function delMemo($name)
     {
         $memo = self::$memoPath."/".$name;
@@ -128,10 +155,31 @@ class Memo
         return $flag ? true : false;
     }
 
+    /**
+     * 获取当前备忘录名称
+     * @return string 当前所在备忘录名称
+     */
     public static function getNowMemoName()
     {
         $record = trim(file_get_contents(self::$currentMemoRecordFile));   
         return $record;
+    }
+
+    /**
+     * 获取所有的备忘录信息，包括短名称、完整名称映射关系
+     * @return [type] [description]
+     */
+    public static function memoInfos()
+    {
+        $finder = new Finder();
+        $finder->files()->in(self::$memoPath);
+        $memos = [];
+        foreach ($finder as $file) {
+            $memoName = $file->getRelativePathname();
+            $shortName = self::getMemoShortName($memoName);
+            $memos[$shortName] = $memoName;
+        }
+        return $memos;
     }
 
     public static function listAllMemo()
@@ -151,6 +199,10 @@ class Memo
         return substr($md5, 0, 8);
     }
 
+    /**
+     * 添加备忘到当前备忘录
+     * @param [type] $memo [description]
+     */
     public static function addMemo($memo)
     {
         $memoName = self::getNowMemoName();
@@ -169,8 +221,7 @@ class Memo
 
     public static function showMemo()
     {
-        $memoName = self::getNowMemoName();
-        $memoPath = self::$memoPath . "/" . $memoName;
+        $memoPath = self::$memoPath . "/" . self::getNowMemoName();
         $lists = file_get_contents($memoPath);
         $lists = json_decode($lists, true);
         $lists = empty($lists) ? [] : $lists;
@@ -179,8 +230,7 @@ class Memo
 
     public static function doMemo($shortName, &$fullName)
     {
-        $memoName = self::getNowMemoName();
-        $memoPath = self::$memoPath . "/" . $memoName;
+        $memoPath = self::$memoPath . "/" . self::getNowMemoName();
         $lists = file_get_contents($memoPath);
         $lists = json_decode($lists, true);
         $lists = empty($lists) ? [] : $lists;
