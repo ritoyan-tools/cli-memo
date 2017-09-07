@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-        "symfony/console": "^3.3",
+        "symfony/console": "^3.2",
         "symfony/finder": "^3.3"
     },
     "autoload": {
