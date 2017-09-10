@@ -74,10 +74,10 @@ class Memo
     public static function initPathVar()
     {
         $home = self::getUserDir();
-        self::$dataPath = sprintf("%s/.memo", $home);
-        self::$memoPath = sprintf("%s/memo", self::$dataPath);
-        self::$initFlagFile = self::$dataPath . "/initFlag";
-        self::$currentMemoRecordFile = sprintf("%s/head_memo_name_record", self::$dataPath);
+        self::$dataPath = sprintf("%s".DIRECTORY_SEPARATOR.".memo", $home);
+        self::$memoPath = sprintf("%s".DIRECTORY_SEPARATOR."memo", self::$dataPath);
+        self::$initFlagFile = self::$dataPath . DIRECTORY_SEPARATOR."initFlag";
+        self::$currentMemoRecordFile = sprintf("%s".DIRECTORY_SEPARATOR."head_memo_name_record", self::$dataPath);
     }
 
     /**
@@ -127,7 +127,7 @@ class Memo
             throw new MemoException("备忘录名称错误", 1);
             
         }
-        $memoPath = self::$memoPath . "/{$name}";
+        $memoPath = self::$memoPath . DIRECTORY_SEPARATOR."{$name}";
         $flag = touch($memoPath);
         return $flag ? true : false;
     }
@@ -150,7 +150,7 @@ class Memo
      */
     public static function delMemo($name)
     {
-        $memo = self::$memoPath."/".$name;
+        $memo = self::$memoPath.DIRECTORY_SEPARATOR.$name;
         $flag = unlink($memo);
         return $flag ? true : false;
     }
@@ -206,7 +206,7 @@ class Memo
     public static function addMemo($memo)
     {
         $memoName = self::getNowMemoName();
-        $memoPath = self::$memoPath . "/" . $memoName;
+        $memoPath = self::$memoPath . DIRECTORY_SEPARATOR . $memoName;
         $lists = file_get_contents($memoPath);
         $lists = json_decode($lists, true);
         $lists = empty($lists) ? [] : $lists;
@@ -221,7 +221,7 @@ class Memo
 
     public static function showMemo()
     {
-        $memoPath = self::$memoPath . "/" . self::getNowMemoName();
+        $memoPath = self::$memoPath . DIRECTORY_SEPARATOR . self::getNowMemoName();
         $lists = file_get_contents($memoPath);
         $lists = json_decode($lists, true);
         $lists = empty($lists) ? [] : $lists;
@@ -230,7 +230,7 @@ class Memo
 
     public static function doMemo($shortName, &$fullName)
     {
-        $memoPath = self::$memoPath . "/" . self::getNowMemoName();
+        $memoPath = self::$memoPath . DIRECTORY_SEPARATOR . self::getNowMemoName();
         $lists = file_get_contents($memoPath);
         $lists = json_decode($lists, true);
         $lists = empty($lists) ? [] : $lists;
