@@ -1,5 +1,6 @@
 <?php
 namespace Aizuyan\Memo;
+// 添加注释
 
 use Symfony\Component\Finder\Finder;
 use Aizuyan\Memo\Exception\MemoException;
